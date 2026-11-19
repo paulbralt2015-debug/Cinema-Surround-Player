@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.21)
 
 project(CinemaSurroundPlayer VERSION 1.0 LANGUAGES CXX)
