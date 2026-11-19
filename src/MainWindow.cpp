@@ -137,10 +137,12 @@ MainWindow::MainWindow(QWidget *parent)
             this,
             &MainWindow::selectAudioDevice);
 
-    connect(&QMediaDevices::defaultAudioOutputChanged,
-            this, [this](const QAudioDevice &) {
-        refreshAudioDevices();
-    });
+auto *mediaDevices = new QMediaDevices(this);
+
+connect(mediaDevices, &QMediaDevices::audioOutputsChanged,
+        this, [this]() {
+    refreshAudioDevices();
+});
 
     refreshAudioDevices();
 }
