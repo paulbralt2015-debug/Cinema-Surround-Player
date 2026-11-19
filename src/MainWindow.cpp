@@ -1,6 +1,6 @@
 
 #include "MainWindow.h"
-
+#include <QMediaDevices>
 #include <QVideoWidget>
 #include <QPushButton>
 #include <QSlider>
