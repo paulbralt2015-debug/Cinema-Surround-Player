@@ -1,0 +1,50 @@
+
+name: Cinema Surround Player - Windows
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Download source
+        uses: actions/checkout@v4
+
+      - name: Install Qt 6
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          arch: 'win64_msvc2022_64'
+          cache: true
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build
+          -G "Visual Studio 17 2022"
+          -A x64
+
+      - name: Compile
+        run: cmake --build build --config Release
+
+      - name: Deploy Qt
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force package
+          Copy-Item build/Release/CinemaSurroundPlayer.exe package/
+          windeployqt --release package/CinemaSurroundPlayer.exe
+
+      - name: Create ZIP
+        shell: pwsh
+        run: |
+          Compress-Archive -Path package/* -DestinationPath CinemaSurroundPlayer-Windows-x64.zip
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: CinemaSurroundPlayer-Windows-x64
+          path: CinemaSurroundPlayer-Windows-x64.zip
