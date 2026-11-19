@@ -1,4 +1,3 @@
-
 name: Cinema Surround Player - Windows
 
 on:
@@ -15,11 +14,12 @@ jobs:
       - name: Download source
         uses: actions/checkout@v4
 
-      - name: Install Qt 6
+      - name: Install Qt 6 with Multimedia
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.3'
           arch: 'win64_msvc2022_64'
+          modules: 'qtmultimedia'
           cache: true
 
       - name: Configure CMake
