@@ -19,6 +19,8 @@ qt_add_executable(CinemaSurroundPlayer
     src/main.cpp
     src/MainWindow.h
     src/MainWindow.cpp
+    src/SurroundProcessor.h
+    src/SurroundProcessor.cpp
 )
 
 target_link_libraries(CinemaSurroundPlayer PRIVATE
