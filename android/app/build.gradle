@@ -10,8 +10,8 @@ android {
         applicationId 'com.cinemasurround.player'
         minSdk 23
         targetSdk 28
-        versionCode 2
-        versionName '0.2.0'
+        versionCode 3
+        versionName '0.3.0'
     }
 
     compileOptions {
@@ -27,7 +27,6 @@ android {
 }
 
 dependencies {
-    // ExoPlayer 2.9.6 supports Android API 16+ and negotiates AC-3/E-AC-3
-    // HDMI passthrough where the Android TV reports compatible sink capabilities.
+    // ExoPlayer uses Android MediaCodec and the standard TV media audio route.
     implementation 'com.google.android.exoplayer:exoplayer:2.9.6'
 }
