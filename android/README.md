@@ -1,17 +1,22 @@
 # Android TV port (Android 6.0+)
 
-This is the first Android TV application shell for the Cinema Surround Player project.
-
 ## Build
-The GitHub Actions workflow `.github/workflows/android-build.yml` builds a debug APK using JDK 17 and Gradle 8.7. The app has `minSdk 23` (Android 6.0).
+GitHub Actions builds a debug APK with JDK 17 and Gradle 8.7. Minimum Android API is 23 (Android 6.0).
 
-## Current status
-- Android TV / D-pad-friendly landscape interface.
-- Video selection through Android's document picker.
-- Basic playback controls using Android's platform VideoView/MediaPlayer stack.
-- Windows Qt application remains unchanged.
+## Included in this iteration
+- Remote-friendly landscape player UI.
+- ExoPlayer 2.9.6 media playback and file selection.
+- AC-3 (Dolby Digital) and E-AC-3 (Dolby Digital Plus) encoded HDMI passthrough negotiation through Android's reported audio sink capabilities.
+- A UI switch to request automatic passthrough or disable passthrough.
 
-## Important audio limitation
-This initial port does **not** yet include the Windows FFmpeg pipeline or a verified Dolby Surround / Pro Logic II decoder. Android's platform player sends decoded audio to the system audio path; it does not expose decoded PCM here for the existing surround processor. No Dolby certification, Pro Logic II decoding, 5.1 output, or HDMI passthrough is claimed at this stage. Those require a separate FFmpeg/MediaCodec audio pipeline, PCM processing integration, and tests against the Coocaa TV's actual audio outputs.
+## Critical passthrough limitations
+The app cannot force bitstream output if the Coocaa firmware/HDMI audio path does not advertise AC-3/E-AC-3 support. ExoPlayer negotiates passthrough based on Android's HDMI audio-capability information. This must be verified on the actual TV and receiver. The TV's optical/ARC/eARC path, firmware settings, connected receiver, and file container/codec all affect the result.
 
-The APK is a compatibility and playback foundation, not the completed surround conversion.
+This implementation does not claim DTS, TrueHD, Dolby Atmos, or any other encoded format passthrough. It does not yet include the desktop FFmpeg DSP chain or a Dolby Pro Logic II matrix decoder. The passthrough switch is a policy/status control; the ExoPlayer audio sink makes the actual per-track passthrough decision. A forced passthrough mode is intentionally not exposed because Android 6 TV firmware cannot be assumed to support it.
+
+## Validation still required
+1. Build the APK in Actions.
+2. Install on the Coocaa Android 6 TV.
+3. Connect an AC-3/E-AC-3-capable AV receiver over HDMI ARC/optical as supported by the TV.
+4. Confirm the receiver's front-panel input format during playback.
+5. Test a known AC-3 sample and an E-AC-3 sample. If Android reports only PCM, the TV firmware/output path is not exposing passthrough to the app.
