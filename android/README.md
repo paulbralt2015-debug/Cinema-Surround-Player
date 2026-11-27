@@ -11,6 +11,7 @@ For AC-3 (Dolby Digital) and E-AC-3 (Dolby Digital Plus) tracks, ExoPlayer 2.19.
 The Dolby Audio logo alone does not prove that the firmware exposes AC-3/E-AC-3 decoding to third-party applications. Actual support must be verified on the TV.
 
 ## Included in this iteration
+- On-device diagnostic indicating whether Android advertises AC-3 and E-AC-3 decoder components (capability listing only; it does not prove successful playback).
 - Remote-friendly landscape player UI and Android document picker.
 - ExoPlayer 2.19.1 playback engine.
 - Standard Android TV media audio routing, with no external receiver/HDMI passthrough control.
