@@ -13,23 +13,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioAttributes;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.android.exoplayer2.util.Util;
+import com.google.android.exoplayer2.MediaItem;
 
 public class MainActivity extends Activity {
     private static final int REQUEST_MEDIA = 41;
 
     private PlayerView playerView;
-    private SimpleExoPlayer player;
+    private ExoPlayer player;
     private TextView status;
     private Uri currentUri;
 
@@ -81,7 +81,7 @@ public class MainActivity extends Activity {
 
         open.setOnClickListener(v -> openMedia());
         play.setOnClickListener(v -> {
-            if (player != null) {
+            if (player != null && currentUri != null) {
                 player.setPlayWhenReady(!player.getPlayWhenReady());
             } else {
                 openMedia();
@@ -94,8 +94,6 @@ public class MainActivity extends Activity {
             }
         });
 
-        // Keep the normal Android TV media route: the television's own audio
-        // pipeline receives decoded PCM or a supported platform codec output.
         initializePlayer();
     }
 
@@ -110,7 +108,9 @@ public class MainActivity extends Activity {
 
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(this);
-        player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
+        player = new ExoPlayer.Builder(this)
+            .setTrackSelector(trackSelector)
+            .build();
 
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
@@ -119,9 +119,9 @@ public class MainActivity extends Activity {
         player.setAudioAttributes(audioAttributes, true);
 
         playerView.setPlayer(player);
-        player.addListener(new Player.EventListener() {
+        player.addListener(new Player.Listener() {
             @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            public void onPlaybackStateChanged(int playbackState) {
                 if (playbackState == Player.STATE_BUFFERING) {
                     status.setText("Chargement de la vidéo et de la piste audio…");
                 } else if (playbackState == Player.STATE_READY) {
@@ -134,10 +134,11 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public void onPlayerError(ExoPlaybackException error) {
+            public void onPlayerError(PlaybackException error) {
                 String detail = error.getMessage() == null ? "Erreur de lecture" : error.getMessage();
                 status.setText("Erreur audio/vidéo : " + detail);
-                Toast.makeText(MainActivity.this, "Impossible de lire ce fichier", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this,
+                    "Impossible de lire ce fichier : " + detail, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -146,7 +147,8 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("video/*");
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         try {
             startActivityForResult(intent, REQUEST_MEDIA);
         } catch (Exception e) {
@@ -157,26 +159,26 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode != REQUEST_MEDIA || resultCode != RESULT_OK || data == null || data.getData() == null) {
+        if (requestCode != REQUEST_MEDIA || resultCode != RESULT_OK ||
+            data == null || data.getData() == null) {
             return;
         }
 
         currentUri = data.getData();
         try {
             getContentResolver().takePersistableUriPermission(
-                currentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION
-            );
+                currentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         } catch (SecurityException ignored) {
             // Some document providers grant only temporary read access.
         }
 
-        String userAgent = Util.getUserAgent(this, "CinemaSurroundPlayer");
-        DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(this, userAgent);
-        MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(currentUri);
+        DefaultDataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this);
+        MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(MediaItem.fromUri(currentUri));
 
-        player.stop(true);
-        player.prepare(mediaSource);
+        player.stop();
+        player.setMediaSource(mediaSource);
+        player.prepare();
         player.setPlayWhenReady(true);
         status.setText("Ouverture du fichier — décodage audio par Android si disponible");
     }
