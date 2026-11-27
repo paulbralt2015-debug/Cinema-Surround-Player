@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -31,6 +33,7 @@ public class MainActivity extends Activity {
     private PlayerView playerView;
     private ExoPlayer player;
     private TextView status;
+    private TextView codecInfo;
     private Uri currentUri;
 
     @Override
@@ -76,7 +79,14 @@ public class MainActivity extends Activity {
         status.setTextSize(13);
         status.setPadding(4, 8, 4, 4);
         status.setText("Prêt — sortie audio du téléviseur");
-        root.addView(status, new LinearLayout.LayoutParams(-1, 42));
+        root.addView(status, new LinearLayout.LayoutParams(-1, 34));
+
+        codecInfo = new TextView(this);
+        codecInfo.setTextColor(Color.rgb(170, 190, 210));
+        codecInfo.setTextSize(12);
+        codecInfo.setPadding(4, 2, 4, 2);
+        codecInfo.setText(getDolbyDecoderReport());
+        root.addView(codecInfo, new LinearLayout.LayoutParams(-1, 30));
         setContentView(root);
 
         open.setOnClickListener(v -> openMedia());
@@ -97,7 +107,7 @@ public class MainActivity extends Activity {
         initializePlayer();
     }
 
-    private Button makeButton(String label) {
+    private String getDolbyDecoderReport() {\n        boolean ac3 = hasDecoder("audio/ac3");\n        boolean eac3 = hasDecoder("audio/eac3");\n        return "Décodeurs Android détectés — AC-3 : " + (ac3 ? "oui" : "non")\n            + " | E-AC-3 : " + (eac3 ? "oui" : "non");\n    }\n\n    private boolean hasDecoder(String mimeType) {\n        try {\n            MediaCodecInfo[] codecs = new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos();\n            for (MediaCodecInfo codec : codecs) {\n                if (codec.isEncoder()) continue;\n                for (String type : codec.getSupportedTypes()) {\n                    if (mimeType.equalsIgnoreCase(type)) return true;\n                }\n            }\n        } catch (Exception ignored) {\n            // Some vendor codec lists are incomplete or restricted.\n        }\n        return false;\n    }\n\n    private Button makeButton(String label) {
         Button button = new Button(this);
         button.setText(label);
         button.setTextSize(14);
