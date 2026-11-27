@@ -10,8 +10,8 @@ android {
         applicationId 'com.cinemasurround.player'
         minSdk 23
         targetSdk 28
-        versionCode 3
-        versionName '0.3.0'
+        versionCode 4
+        versionName '0.3.1'
     }
 
     compileOptions {
@@ -27,6 +27,6 @@ android {
 }
 
 dependencies {
-    // ExoPlayer uses Android MediaCodec and the standard TV media audio route.
-    implementation 'com.google.android.exoplayer:exoplayer:2.9.6'
+    // ExoPlayer 2.19.1 uses Android MediaCodec and the TV's standard audio route.
+    implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
 }
