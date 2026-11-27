@@ -107,7 +107,29 @@ public class MainActivity extends Activity {
         initializePlayer();
     }
 
-    private String getDolbyDecoderReport() {\n        boolean ac3 = hasDecoder("audio/ac3");\n        boolean eac3 = hasDecoder("audio/eac3");\n        return "Décodeurs Android détectés — AC-3 : " + (ac3 ? "oui" : "non")\n            + " | E-AC-3 : " + (eac3 ? "oui" : "non");\n    }\n\n    private boolean hasDecoder(String mimeType) {\n        try {\n            MediaCodecInfo[] codecs = new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos();\n            for (MediaCodecInfo codec : codecs) {\n                if (codec.isEncoder()) continue;\n                for (String type : codec.getSupportedTypes()) {\n                    if (mimeType.equalsIgnoreCase(type)) return true;\n                }\n            }\n        } catch (Exception ignored) {\n            // Some vendor codec lists are incomplete or restricted.\n        }\n        return false;\n    }\n\n    private Button makeButton(String label) {
+    private String getDolbyDecoderReport() {
+        boolean ac3 = hasDecoder("audio/ac3");
+        boolean eac3 = hasDecoder("audio/eac3");
+        return "Décodeurs Android détectés — AC-3 : " + (ac3 ? "oui" : "non")
+            + " | E-AC-3 : " + (eac3 ? "oui" : "non");
+    }
+
+    private boolean hasDecoder(String mimeType) {
+        try {
+            MediaCodecInfo[] codecs = new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos();
+            for (MediaCodecInfo codec : codecs) {
+                if (codec.isEncoder()) continue;
+                for (String type : codec.getSupportedTypes()) {
+                    if (mimeType.equalsIgnoreCase(type)) return true;
+                }
+            }
+        } catch (Exception ignored) {
+            // Some vendor codec lists are incomplete or restricted.
+        }
+        return false;
+    }
+
+    private Button makeButton(String label) {
         Button button = new Button(this);
         button.setText(label);
         button.setTextSize(14);
