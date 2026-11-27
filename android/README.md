@@ -3,20 +3,27 @@
 ## Build
 GitHub Actions builds a debug APK with JDK 17 and Gradle 8.7. Minimum Android API is 23 (Android 6.0).
 
+## Audio target: the Coocaa TV's own speakers
+This version uses Android's normal media audio route (USAGE_MEDIA / CONTENT_TYPE_MOVIE). It does not target HDMI ARC, optical output, or an external AV receiver.
+
+For AC-3 (Dolby Digital) and E-AC-3 (Dolby Digital Plus) tracks, ExoPlayer asks Android for a compatible decoder. If the Coocaa firmware provides a Dolby-capable MediaCodec decoder, Android can decode the track and send the resulting audio through the television's internal audio pipeline. If the hardware decoder is unavailable, playback may fail or require a future software-decoding integration.
+
+Important: this is not a promise of raw Dolby bitstream passthrough to the built-in speakers. Internal speakers normally need the TV's own decoder/audio pipeline; the app cannot force a proprietary Dolby decoder that the firmware does not expose to Android. The Dolby Audio logo alone does not confirm that an application can access AC-3/E-AC-3 decoding.
+
 ## Included in this iteration
-- Remote-friendly landscape player UI.
-- ExoPlayer 2.9.6 media playback and file selection.
-- AC-3 (Dolby Digital) and E-AC-3 (Dolby Digital Plus) encoded HDMI passthrough negotiation through Android's reported audio sink capabilities.
-- A UI switch to request automatic passthrough or disable passthrough.
+- Remote-friendly landscape player UI and Android document picker.
+- ExoPlayer 2.9.6 playback.
+- Standard Android TV media audio routing, with no external receiver/HDMI passthrough control.
+- Platform codec selection for audio formats supported by the Coocaa firmware.
 
-## Critical passthrough limitations
-The app cannot force bitstream output if the Coocaa firmware/HDMI audio path does not advertise AC-3/E-AC-3 support. ExoPlayer negotiates passthrough based on Android's HDMI audio-capability information. This must be verified on the actual TV and receiver. The TV's optical/ARC/eARC path, firmware settings, connected receiver, and file container/codec all affect the result.
+## Not yet included
+- The desktop FFmpeg DSP chain.
+- A Dolby Surround / Pro Logic II matrix decoder.
+- Guaranteed AC-3/E-AC-3 decoding on this exact Coocaa firmware. This must be tested on the television with sample files.
 
-This implementation does not claim DTS, TrueHD, Dolby Atmos, or any other encoded format passthrough. It does not yet include the desktop FFmpeg DSP chain or a Dolby Pro Logic II matrix decoder. The passthrough switch is a policy/status control; the ExoPlayer audio sink makes the actual per-track passthrough decision. A forced passthrough mode is intentionally not exposed because Android 6 TV firmware cannot be assumed to support it.
-
-## Validation still required
-1. Build the APK in Actions.
-2. Install on the Coocaa Android 6 TV.
-3. Connect an AC-3/E-AC-3-capable AV receiver over HDMI ARC/optical as supported by the TV.
-4. Confirm the receiver's front-panel input format during playback.
-5. Test a known AC-3 sample and an E-AC-3 sample. If Android reports only PCM, the TV firmware/output path is not exposing passthrough to the app.
+## Test on the Coocaa
+1. Install the APK on the TV.
+2. Play a known video containing an AC-3 5.1 audio track.
+3. Check that sound comes from the TV's built-in speakers.
+4. Repeat with an E-AC-3 track.
+5. If either track fails, collect the on-screen error and the exact audio codec/channel format. The next step will be to add or select a compatible decoder path for this firmware.
